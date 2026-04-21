@@ -14,3 +14,5 @@ set_property(TARGET pntr_nanosvg_test PROPERTY C_STANDARD 11)
 
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 add_test(NAME pntr_nanosvg_test COMMAND pntr_nanosvg_test)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

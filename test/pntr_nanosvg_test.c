@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <string.h>
 
 #define PNTR_IMPLEMENTATION
 #include "pntr.h"
@@ -7,27 +6,21 @@
 #define PNTR_NANOSVG_IMPLEMENTATION
 #include "pntr_nanosvg.h"
 
-static const char* TEST_SVG =
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\">"
-    "<rect x=\"10\" y=\"10\" width=\"80\" height=\"80\" fill=\"red\"/>"
-    "</svg>";
-
 int main(void) {
-    // pntr_load_nanosvg_from_memory
+    // pntr_load_nanosvg
     {
-        NSVGimage* svg = pntr_load_nanosvg_from_memory(
-            (const unsigned char*)TEST_SVG, (unsigned int)strlen(TEST_SVG), "px", 96.0f);
+        NSVGimage* svg = pntr_load_nanosvg("resources/tiger.svg", "px", 96.0f);
         assert(svg != NULL);
         assert(svg->width > 0);
         assert(svg->height > 0);
 
         // pntr_gen_image_nanosvg
         {
-            pntr_image* image = pntr_gen_image_nanosvg(svg, 64, 64);
+            pntr_image* image = pntr_gen_image_nanosvg(svg, 1.0f);
             assert(image != NULL);
-            assert(image->width == 64);
-            assert(image->height == 64);
-            assert(pntr_save_image(image, "pntr_nanosvg_test.png"));
+            assert(image->width > 0);
+            assert(image->height > 0);
+            assert(pntr_save_image(image, "tiger.png"));
             pntr_unload_image(image);
         }
 
@@ -42,6 +35,12 @@ int main(void) {
         pntr_unload_nanosvg(svg);
     }
 
+    // pntr_load_nanosvg with missing file returns NULL
+    {
+        NSVGimage* svg = pntr_load_nanosvg("resources/missing.svg", "px", 96.0f);
+        assert(svg == NULL);
+    }
+
     // pntr_load_nanosvg_from_memory with NULL returns NULL
     {
         NSVGimage* svg = pntr_load_nanosvg_from_memory(NULL, 0, "px", 96.0f);
@@ -50,7 +49,22 @@ int main(void) {
 
     // pntr_gen_image_nanosvg with NULL returns NULL
     {
-        pntr_image* image = pntr_gen_image_nanosvg(NULL, 64, 64);
+        pntr_image* image = pntr_gen_image_nanosvg(NULL, 1.0f);
+        assert(image == NULL);
+    }
+
+    // pntr_load_image_nanosvg
+    {
+        pntr_image* image = pntr_load_image_nanosvg("resources/tiger.svg", "px", 96.0f);
+        assert(image != NULL);
+        assert(image->width > 0);
+        assert(image->height > 0);
+        pntr_unload_image(image);
+    }
+
+    // pntr_load_image_nanosvg with missing file returns NULL
+    {
+        pntr_image* image = pntr_load_image_nanosvg("resources/missing.svg", "px", 96.0f);
         assert(image == NULL);
     }
 

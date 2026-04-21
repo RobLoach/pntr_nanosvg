@@ -17,12 +17,7 @@ else()
     set(PNTR_NANOSVG_IS_MAIN FALSE)
 endif()
 
-option(PNTR_NANOSVG_BUILD_EXAMPLES "pntr_nanosvg: Examples" ${PNTR_NANOSVG_IS_MAIN})
 option(PNTR_NANOSVG_BUILD_TESTS "pntr_nanosvg: Tests" ${PNTR_NANOSVG_IS_MAIN})
-
-if (PNTR_NANOSVG_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
 
 # Testing
 if (PNTR_NANOSVG_BUILD_TESTS)
