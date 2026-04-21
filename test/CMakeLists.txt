@@ -1,24 +1,18 @@
-# Add the cmake module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
-find_package(pntr)
-find_package(pntr_assetsys)
+find_package(pntr REQUIRED)
+find_package(nanosvg REQUIRED)
 
-# Resources
-file(GLOB resources resources/*)
-set(test_resources)
-list(APPEND test_resources ${resources})
-file(COPY ${test_resources} DESTINATION "resources/")
-
-# pntr_tiled_test
-add_executable(pntr_tiled_test pntr_tiled_test.c)
-target_link_libraries(pntr_tiled_test PUBLIC
+add_executable(pntr_nanosvg_test pntr_nanosvg_test.c)
+target_link_libraries(pntr_nanosvg_test PUBLIC
     pntr
-    pntr_tiled
-    pntr_assetsys
+    nanosvg
+    nanosvgrast
+    pntr_nanosvg
 )
-set_property(TARGET pntr_tiled_test PROPERTY C_STANDARD 11)
+set_property(TARGET pntr_nanosvg_test PROPERTY C_STANDARD 11)
 
-# Set up the test
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-add_test(NAME pntr_tiled_test COMMAND pntr_tiled_test)
+add_test(NAME pntr_nanosvg_test COMMAND pntr_nanosvg_test)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

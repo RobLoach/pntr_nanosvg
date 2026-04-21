@@ -1,124 +1,72 @@
 #include <assert.h>
-#include <string.h>
 
 #define PNTR_IMPLEMENTATION
 #include "pntr.h"
 
-// #define PNTR_ASSETSYS_IMPLEMENTATION
-// #include "pntr_assetsys.h"
+#define PNTR_NANOSVG_IMPLEMENTATION
+#include "pntr_nanosvg.h"
 
-#define PNTR_TILED_IMPLEMENTATION
-#include "pntr_tiled.h"
-
-// Assertion library
-#include "pntr_assert.h"
-
-int main() {
-    // pntr_load_tiled()
+int main(void) {
+    // pntr_load_nanosvg
     {
-        cute_tiled_map_t* map = pntr_load_tiled("resources/pntr_tiled_test.tmj");
-        assert(map != NULL);
+        NSVGimage* svg = pntr_load_nanosvg("resources/tiger.svg", "px", 96.0f);
+        assert(svg != NULL);
+        assert(svg->width > 0);
+        assert(svg->height > 0);
 
-        // pntr_gen_image_tiled()
+        // pntr_gen_image_nanosvg
         {
-            pntr_image* actual = pntr_gen_image_tiled(map, PNTR_WHITE);
-            assert(actual != NULL);
-            assert(pntr_save_image(actual, "actual.png"));
-
-            pntr_image* expected = pntr_load_image("resources/expected.png");
-            assert(expected != NULL);
-            PNTR_ASSERT_IMAGE_EQUALS(actual, expected);
-
-            pntr_unload_image(expected);
-            pntr_unload_image(actual);
+            pntr_image* image = pntr_gen_image_nanosvg(svg, 1.0f);
+            assert(image != NULL);
+            assert(image->width > 0);
+            assert(image->height > 0);
+            assert(pntr_save_image(image, "tiger.png"));
+            pntr_unload_image(image);
         }
 
-        // pntr_tiled_layer()
+        // pntr_draw_nanosvg
         {
-            cute_tiled_layer_t* layer = pntr_tiled_layer(map, "Structure");
-            assert(layer != NULL);
-
-            assert(PNTR_STRCMP(layer->name.ptr, "Structure") == 0);
-            assert(pntr_tiled_layer(map, "Non-Existant Layer") == NULL);
-            assert(pntr_tiled_layer(map, NULL) == NULL);
+            pntr_image* canvas = pntr_gen_image_color(128, 128, PNTR_WHITE);
+            assert(canvas != NULL);
+            pntr_draw_nanosvg(canvas, svg);
+            pntr_unload_image(canvas);
         }
 
-        // pntr_layer_tile()
-        {
-            cute_tiled_layer_t* layer = pntr_tiled_layer(map, "Plants");
-            assert(layer != NULL);
-            int gid = pntr_layer_tile(layer, 8, 2);
-            assert(gid == 39);
-            gid = pntr_layer_tile(layer, 2, 6);
-            assert(gid == 38);
-        }
-
-        // pntr_set_layer_tile()
-        {
-            cute_tiled_layer_t* layer = pntr_tiled_layer(map, "Structure");
-            assert(layer != NULL);
-            assert(pntr_layer_tile(layer, 2, 2) == 10);
-            pntr_set_layer_tile(layer, 2, 2, 34);
-            assert(pntr_layer_tile(layer, 2, 2) == 34);
-        }
-
-        // pntr_layer_tile_from_position()
-        {
-            cute_tiled_layer_t* layer = pntr_tiled_layer(map, "Plants");
-            assert(layer != NULL);
-
-            pntr_vector result = pntr_layer_tile_from_position(map, layer, 239, 110);
-            assert(result.x == 7);
-            assert(result.y == 3);
-
-            result = pntr_layer_tile_from_position(map, layer, 140, 53);
-            assert(result.x == 4);
-            assert(result.y == 1);
-        }
-
-        // pntr_tiled_layer_count()
-        {
-            assert(pntr_tiled_layer_count(map) == 4);
-        }
-
-        // pntr_tiled_layer_from_index()
-        {
-            cute_tiled_layer_t* layer = pntr_tiled_layer_from_index(map, 2);
-            assert(strcmp(layer->name.ptr, "Plants") == 0);
-
-            layer = pntr_tiled_layer_from_index(map, -5);
-            assert(layer == NULL);
-
-            layer = pntr_tiled_layer_from_index(map, 500);
-            assert(layer == NULL);
-        }
-
-        pntr_unload_tiled(map);
+        pntr_unload_nanosvg(svg);
     }
 
-    // assertsys
-    #ifdef PNTR_ASSETSYS_IMPLEMENTATION
+    // pntr_load_nanosvg with missing file returns NULL
     {
-        assetsys_t* sys = pntr_load_assetsys("resources", "/res");
-        assert(sys != NULL);
-
-        cute_tiled_map_t* map = pntr_load_tiled_from_assetsys(sys, "/res/pntr_tiled_test.tmj");
-        assert(map != NULL);
-
-        pntr_image* actual = pntr_gen_image_tiled(map, PNTR_WHITE);
-        assert(actual != NULL);
-        assert(pntr_save_image(actual, "pntr_tiled_test-assetsys.png"));
-
-        pntr_image* expected = pntr_load_image("resources/expected.png");
-        assert(expected != NULL);
-        PNTR_ASSERT_IMAGE_EQUALS(actual, expected);
-        pntr_unload_image(expected);
-
-        pntr_unload_tiled(map);
-        pntr_unload_image(actual);
-        pntr_unload_assetsys(sys);
+        NSVGimage* svg = pntr_load_nanosvg("resources/missing.svg", "px", 96.0f);
+        assert(svg == NULL);
     }
-    #endif
+
+    // pntr_load_nanosvg_from_memory with NULL returns NULL
+    {
+        NSVGimage* svg = pntr_load_nanosvg_from_memory(NULL, 0, "px", 96.0f);
+        assert(svg == NULL);
+    }
+
+    // pntr_gen_image_nanosvg with NULL returns NULL
+    {
+        pntr_image* image = pntr_gen_image_nanosvg(NULL, 1.0f);
+        assert(image == NULL);
+    }
+
+    // pntr_load_image_nanosvg
+    {
+        pntr_image* image = pntr_load_image_nanosvg("resources/tiger.svg", "px", 96.0f);
+        assert(image != NULL);
+        assert(image->width > 0);
+        assert(image->height > 0);
+        pntr_unload_image(image);
+    }
+
+    // pntr_load_image_nanosvg with missing file returns NULL
+    {
+        pntr_image* image = pntr_load_image_nanosvg("resources/missing.svg", "px", 96.0f);
+        assert(image == NULL);
+    }
 
     return 0;
 }
