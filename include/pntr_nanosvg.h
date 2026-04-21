@@ -73,7 +73,14 @@ extern "C" {
 #endif
 
 PNTR_NANOSVG_API NSVGimage* pntr_load_nanosvg(const char* fileName, const char* units, float dpi) {
-    return nsvgParseFromFile(fileName, units, dpi);
+    unsigned int bytesRead;
+    unsigned char* fileData = pntr_load_file(fileName, &bytesRead);
+    if (fileData == NULL) {
+        return NULL;
+    }
+    NSVGimage* svg = pntr_load_nanosvg_from_memory(fileData, bytesRead, units, dpi);
+    pntr_unload_file(fileData);
+    return svg;
 }
 
 PNTR_NANOSVG_API NSVGimage* pntr_load_nanosvg_from_memory(const unsigned char* fileData, unsigned int dataSize, const char* units, float dpi) {
