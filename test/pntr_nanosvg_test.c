@@ -27,6 +27,7 @@ int main(void) {
             assert(image != NULL);
             assert(image->width == 64);
             assert(image->height == 64);
+            assert(pntr_save_image(image, "pntr_nanosvg_test.png"));
             pntr_unload_image(image);
         }
 
