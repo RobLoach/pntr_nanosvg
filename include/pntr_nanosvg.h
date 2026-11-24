@@ -57,6 +57,16 @@
 #define PNTR_NANOSVG_NANOSVGRAST_H "nanosvgrast.h"
 #endif
 
+// Compile the nanosvg implementation alongside pntr_nanosvg's, unless opted out
+#if defined(PNTR_NANOSVG_IMPLEMENTATION) && !defined(PNTR_NANOSVG_NO_NANOSVG_IMPLEMENTATION)
+    #ifndef NANOSVG_IMPLEMENTATION
+        #define NANOSVG_IMPLEMENTATION
+    #endif
+    #ifndef NANOSVGRAST_IMPLEMENTATION
+        #define NANOSVGRAST_IMPLEMENTATION
+    #endif
+#endif
+
 #include PNTR_NANOSVG_NANOSVG_H
 #include PNTR_NANOSVG_NANOSVGRAST_H
 

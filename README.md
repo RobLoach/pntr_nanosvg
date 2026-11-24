@@ -53,6 +53,12 @@ By default the headers `nanosvg.h` and `nanosvgrast.h` are included directly. Ov
 #define PNTR_NANOSVG_NANOSVGRAST_H "path/to/nanosvgrast.h"
 ```
 
+`PNTR_NANOSVG_IMPLEMENTATION` also compiles the nanosvg implementation. If your project already compiles nanosvg elsewhere, opt out with:
+
+```c
+#define PNTR_NANOSVG_NO_NANOSVG_IMPLEMENTATION
+```
+
 ## Build
 
 ```sh

@@ -9,6 +9,10 @@ project(pntr_nanosvg
 # pntr_nanosvg
 add_library(pntr_nanosvg INTERFACE)
 target_include_directories(pntr_nanosvg INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+if (UNIX)
+    # nanosvg's implementation needs libm
+    target_link_libraries(pntr_nanosvg INTERFACE m)
+endif()
 
 # Options
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")

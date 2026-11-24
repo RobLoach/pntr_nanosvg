@@ -6,10 +6,11 @@ find_package(nanosvg REQUIRED)
 add_executable(pntr_nanosvg_test pntr_nanosvg_test.c)
 target_link_libraries(pntr_nanosvg_test PUBLIC
     pntr
-    nanosvg
-    nanosvgrast
     pntr_nanosvg
 )
+
+# pntr_nanosvg compiles nanosvg itself, so only the headers are needed
+target_include_directories(pntr_nanosvg_test PRIVATE ${nanosvg_SOURCE_DIR}/src)
 set_property(TARGET pntr_nanosvg_test PROPERTY C_STANDARD 11)
 
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
