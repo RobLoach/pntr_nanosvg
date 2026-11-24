@@ -22,6 +22,9 @@ int main(void) {
     pntr_image* canvas = pntr_gen_image_color(512, 512, PNTR_WHITE);
     pntr_draw_nanosvg(canvas, svg);
 
+    // Or draw it at a given position and scale
+    pntr_draw_nanosvg_ex(canvas, svg, 10, 20, 0.5f);
+
     pntr_unload_nanosvg(svg);
     pntr_unload_image(image);
     pntr_unload_image(canvas);
@@ -37,6 +40,7 @@ NSVGimage* pntr_load_nanosvg_from_memory(const unsigned char* fileData, unsigned
 void pntr_unload_nanosvg(NSVGimage* svg);
 pntr_image* pntr_gen_image_nanosvg(NSVGimage* svg, float scale);
 void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg);
+void pntr_draw_nanosvg_ex(pntr_image* dst, NSVGimage* svg, int posX, int posY, float scale);
 pntr_image* pntr_load_image_nanosvg(const char* fileName, const char* units, float dpi);
 pntr_image* pntr_load_image_nanosvg_from_memory(const unsigned char* fileData, unsigned int dataSize, const char* units, float dpi);
 ```

@@ -127,6 +127,20 @@ PNTR_NANOSVG_API pntr_image* pntr_gen_image_nanosvg(NSVGimage* svg, float scale)
 PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg);
 
 /**
+ * Draw an SVG onto an existing pntr image at the given position and scale.
+ *
+ * Only the area of @p dst covered by the SVG is rasterized, and the result is clipped
+ * to the destination bounds and alpha-blended onto @p dst.
+ *
+ * @param dst Destination image to draw onto.
+ * @param svg SVG image to rasterize and draw.
+ * @param posX X coordinate of the SVG's top-left corner in @p dst.
+ * @param posY Y coordinate of the SVG's top-left corner in @p dst.
+ * @param scale Uniform scale factor applied to the SVG's natural size (1.0f = native size).
+ */
+PNTR_NANOSVG_API void pntr_draw_nanosvg_ex(pntr_image* dst, NSVGimage* svg, int posX, int posY, float scale);
+
+/**
  * Load an SVG file from disk and rasterize it into a new pntr image.
  *
  * A convenience wrapper around pntr_load_nanosvg() and pntr_gen_image_nanosvg().
@@ -204,8 +218,31 @@ PNTR_NANOSVG_API void pntr_unload_nanosvg(NSVGimage* svg) {
     }
 }
 
-PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg) {
-    if (dst == NULL || svg == NULL || svg->width <= 0 || svg->height <= 0) {
+PNTR_NANOSVG_API void pntr_draw_nanosvg_ex(pntr_image* dst, NSVGimage* svg, int posX, int posY, float scale) {
+    if (dst == NULL || svg == NULL || svg->width <= 0 || svg->height <= 0 || scale <= 0.0f) {
+        return;
+    }
+
+    // Size of the scaled SVG, rounded up to cover partial pixels
+    float scaledWidth = svg->width * scale;
+    float scaledHeight = svg->height * scale;
+    int width = (int)scaledWidth;
+    int height = (int)scaledHeight;
+    if ((float)width < scaledWidth) {
+        width++;
+    }
+    if ((float)height < scaledHeight) {
+        height++;
+    }
+
+    // Clip the covered area to the destination
+    int x0 = posX > 0 ? posX : 0;
+    int y0 = posY > 0 ? posY : 0;
+    int x1 = posX + width < dst->width ? posX + width : dst->width;
+    int y1 = posY + height < dst->height ? posY + height : dst->height;
+    int w = x1 - x0;
+    int h = y1 - y0;
+    if (w <= 0 || h <= 0) {
         return;
     }
 
@@ -214,32 +251,39 @@ PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg) {
         return;
     }
 
-    int w = dst->width;
-    int h = dst->height;
-    float scaleX = (float)w / svg->width;
-    float scaleY = (float)h / svg->height;
-    float scale = scaleX < scaleY ? scaleX : scaleY;
-    float tx = ((float)w - svg->width * scale) / 2.0f;
-    float ty = ((float)h - svg->height * scale) / 2.0f;
-
     unsigned char* buf = (unsigned char*)PNTR_MALLOC((size_t)w * (size_t)h * 4);
     if (buf == NULL) {
         nsvgDeleteRasterizer(rast);
         return;
     }
 
-    nsvgRasterize(rast, svg, tx, ty, scale, buf, w, h, w * 4);
+    nsvgRasterize(rast, svg, (float)(posX - x0), (float)(posY - y0), scale, buf, w, h, w * 4);
     nsvgDeleteRasterizer(rast);
 
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             unsigned char* p = buf + ((size_t)y * (size_t)w + (size_t)x) * 4;
             pntr_color src = pntr_new_color(p[0], p[1], p[2], p[3]);
-            PNTR_PIXEL(dst, x, y) = pntr_color_alpha_blend(PNTR_PIXEL(dst, x, y), src);
+            PNTR_PIXEL(dst, x0 + x, y0 + y) = pntr_color_alpha_blend(PNTR_PIXEL(dst, x0 + x, y0 + y), src);
         }
     }
 
     PNTR_FREE(buf);
+}
+
+PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg) {
+    if (dst == NULL || svg == NULL || svg->width <= 0 || svg->height <= 0) {
+        return;
+    }
+
+    // Scale uniformly to fit, centered in the destination
+    float scaleX = (float)dst->width / svg->width;
+    float scaleY = (float)dst->height / svg->height;
+    float scale = scaleX < scaleY ? scaleX : scaleY;
+    int posX = (int)(((float)dst->width - svg->width * scale) / 2.0f + 0.5f);
+    int posY = (int)(((float)dst->height - svg->height * scale) / 2.0f + 0.5f);
+
+    pntr_draw_nanosvg_ex(dst, svg, posX, posY, scale);
 }
 
 PNTR_NANOSVG_API pntr_image* pntr_gen_image_nanosvg(NSVGimage* svg, float scale) {
@@ -258,7 +302,7 @@ PNTR_NANOSVG_API pntr_image* pntr_gen_image_nanosvg(NSVGimage* svg, float scale)
         return NULL;
     }
 
-    pntr_draw_nanosvg(image, svg);
+    pntr_draw_nanosvg_ex(image, svg, 0, 0, scale);
     return image;
 }
 
