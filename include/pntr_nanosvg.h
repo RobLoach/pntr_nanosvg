@@ -222,7 +222,7 @@ PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg) {
     float tx = ((float)w - svg->width * scale) / 2.0f;
     float ty = ((float)h - svg->height * scale) / 2.0f;
 
-    unsigned char* buf = (unsigned char*)PNTR_MALLOC((size_t)(w * h * 4));
+    unsigned char* buf = (unsigned char*)PNTR_MALLOC((size_t)w * (size_t)h * 4);
     if (buf == NULL) {
         nsvgDeleteRasterizer(rast);
         return;
@@ -233,7 +233,7 @@ PNTR_NANOSVG_API void pntr_draw_nanosvg(pntr_image* dst, NSVGimage* svg) {
 
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
-            unsigned char* p = buf + (y * w + x) * 4;
+            unsigned char* p = buf + ((size_t)y * (size_t)w + (size_t)x) * 4;
             pntr_color src = pntr_new_color(p[0], p[1], p[2], p[3]);
             PNTR_PIXEL(dst, x, y) = pntr_color_alpha_blend(PNTR_PIXEL(dst, x, y), src);
         }
